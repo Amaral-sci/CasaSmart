@@ -6,13 +6,15 @@
 //
 
 import Foundation
-internal import Combine
+import Combine
+import SwiftUI
+
 
 @MainActor
 final class HomeViewModel: ObservableObject {
-
+    
     @Published var devices: [Device] = [
-
+        
         Device(
             id: UUID(),
             name: "Iluminação Entrada",
@@ -27,7 +29,7 @@ final class HomeViewModel: ObservableObject {
             signal: -48,
             isOn: true
         ),
-
+        
         Device(
             id: UUID(),
             name: "Luz Cozinha",
@@ -42,7 +44,7 @@ final class HomeViewModel: ObservableObject {
             signal: -52,
             isOn: false
         ),
-
+        
         Device(
             id: UUID(),
             name: "Luz Corredor",
@@ -58,16 +60,57 @@ final class HomeViewModel: ObservableObject {
             isOn: true
         )
     ]
+    func add(
+        _ device: Device
+    ) {
+
+        devices.append(device)
+
+    }
+    
+    func toggle(
+        _ device: Device
+    ) {
 
 
-    func toggle(_ device: Device) {
-
-        guard let index = devices.firstIndex(of: device) else {
+        guard let index = devices.firstIndex(of: device)
+        else {
             return
         }
 
+
+
         devices[index].isOn.toggle()
 
+
+
+        Task {
+
+
+            do {
+
+
+                try await NovaDigitalService.shared.toggle(
+                    device: devices[index]
+                )
+
+
+            } catch {
+
+
+                print(
+                    error.localizedDescription
+                )
+
+
+            }
+
+        }
+
+    }
+        
+        // Futuro:
+        // NovaDigitalService.shared.toggle(device)
+        
     }
 
-}

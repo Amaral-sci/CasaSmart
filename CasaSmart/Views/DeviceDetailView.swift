@@ -7,241 +7,439 @@
 
 import SwiftUI
 
+
 struct DeviceDetailView: View {
 
     @Binding var device: Device
 
+    @EnvironmentObject
+    var store: DeviceStore
+    
+    
     var body: some View {
-
+        
+        
         ZStack {
-
+            
+            
             LinearGradient(
                 colors: [
+                    
                     Color(.systemBackground),
-                    device.isOn ?
-                    Color.yellow.opacity(0.15) :
-                    Color.gray.opacity(0.1)
+                    
+                    device.isOn
+                    ? Color.yellow.opacity(0.15)
+                    : Color.blue.opacity(0.08)
+                    
                 ],
+                
                 startPoint: .top,
+                
                 endPoint: .bottom
             )
             .ignoresSafeArea()
+            
+            
+            
+            ScrollView {
+                
+                
+                VStack(
+                    spacing: 30
+                ) {
+                    
+                    
+                    header
+                    
+                    
+                    
+                    powerButton
+                    
+                    
+                    
+                    statusCard
+                    
+                    
+                    
+                    technicalCard
+                    
+                    NavigationLink {
 
-
-            VStack(spacing: 30) {
-
-
-                // MARK: - Ícone
-
-                ZStack {
-
-                    Circle()
-                        .fill(
-                            device.isOn ?
-                            Color.yellow.opacity(0.25) :
-                            Color.gray.opacity(0.15)
+                        DeviceDetailView(
+                            device: $device
                         )
-                        .frame(
-                            width: 150,
-                            height: 150
+                        .environmentObject(store)
+
+                        
+                    } label: {
+                        
+                        HStack {
+                            
+                            Image(systemName: "gear")
+                            
+                            Text("Configurações")
+                            
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: 20
+                            )
                         )
-
-
-                    Image(systemName: device.icon)
-                        .font(
-                            .system(size: 65)
-                        )
-                        .foregroundStyle(
-                            device.isOn ?
-                            .yellow :
-                            .gray
-                        )
-                        .shadow(
-                            color: device.isOn ? .yellow : .clear,
-                            radius: 20
-                        )
-
-                }
-
-
-
-                // MARK: - Nome
-
-
-                VStack(spacing: 8) {
-
-                    Text(device.name)
-                        .font(
-                            .largeTitle.bold()
-                        )
-
-
-                    Text(device.room)
-                        .font(
-                            .title3
-                        )
-                        .foregroundStyle(
-                            .secondary
-                        )
-
-                }
-
-
-
-                // MARK: - Botão principal
-
-
-                Button {
-
-
-                    device.isOn.toggle()
-
-
-                } label: {
-
-
-                    HStack {
-
-
-                        Image(
-                            systemName:
-                                device.isOn ?
-                                "power" :
-                                "power"
-                        )
-
-
-                        Text(
-                            device.isOn ?
-                            "Ligado" :
-                            "Desligado"
-                        )
-                        .font(
-                            .title3.bold()
-                        )
-
-
+                        
                     }
-                    .frame(
-                        maxWidth: .infinity
-                    )
-                    .padding()
-                    .background(
-                        device.isOn ?
-                        Color.yellow :
-                        Color.gray.opacity(0.3)
-                    )
-                    .foregroundStyle(
-                        device.isOn ?
-                        .black :
-                        .primary
-                    )
-                    .clipShape(
-                        RoundedRectangle(
-                            cornerRadius: 20
-                        )
-                    )
-
-                }
-
-
-
-                // MARK: - Informações
-
-
-                VStack(spacing: 15) {
-
-
-                    infoRow(
-                        icon: "wifi",
-                        title: "Conexão",
-                        value: device.online ?
-                        "Online" :
-                        "Offline"
-                    )
-
-
-                    if let signal = device.signal {
-
-
-                        infoRow(
-                            icon: "antenna.radiowaves.left.and.right",
-                            title: "Sinal",
-                            value: "\(signal)dBm"
-                        )
-
-                    }
-
-
-
-                    if let id = device.virtualID {
-
-
-                        infoRow(
-                            icon: "number",
-                            title: "ID Tuya",
-                            value: id
-                        )
-
-                    }
-
-
+                    
+                    
+                    
                 }
                 .padding()
-                .background(
-                    .ultraThinMaterial
-                )
-                .clipShape(
-                    RoundedRectangle(
-                        cornerRadius: 25
-                    )
-                )
-
-
-                Spacer()
-
+                
             }
-            .padding()
-
+            
+            
         }
+        
         .navigationTitle(
-            "Dispositivo"
+            "Controle"
         )
+        
         .navigationBarTitleDisplayMode(
             .inline
         )
-
+        
+        
     }
-
-
-
-    private func infoRow(
-        icon: String,
-        title: String,
-        value: String
-    ) -> some View {
-
-
-        HStack {
-
-
-            Image(systemName: icon)
-                .frame(width: 30)
-
-
-            Text(title)
-
-
-            Spacer()
-
-
-            Text(value)
+    
+    
+    
+    // MARK: - Cabeçalho
+    
+    
+    private var header: some View {
+        
+        
+        VStack(
+            spacing: 15
+        ) {
+            
+            
+            ZStack {
+                
+                
+                Circle()
+                
+                    .fill(
+                        
+                        device.isOn
+                        
+                        ?
+                        Color.yellow.opacity(0.25)
+                        
+                        :
+                            
+                            Color.gray.opacity(0.15)
+                        
+                    )
+                
+                    .frame(
+                        width: 160,
+                        height: 160
+                    )
+                
+                
+                
+                Image(systemName: device.icon)
+                
+                    .font(
+                        .system(size: 75)
+                    )
+                
+                    .foregroundStyle(
+                        
+                        device.isOn
+                        ?
+                            .yellow : .gray
+                        
+                    )
+                
+            }
+            
+            
+            
+            Text(device.name)
+            
+                .font(
+                    .largeTitle.bold()
+                )
+            
+            
+            
+            Text(device.room)
+            
+                .font(
+                    .title3
+                )
+            
                 .foregroundStyle(
                     .secondary
                 )
-
+            
+            
         }
-
+        
     }
+    
+    
+    
+    // MARK: - Botão Energia
+    
+    private var powerButton: some View {
+        
+        VStack(spacing: 15) {
+            
+            Button {
+                
+                withAnimation(.spring) {
+                    store.toggle(device)
+                    }
 
+               
+                
+            } label: {
+                
+                ZStack {
+                    
+                    Circle()
+                        .fill(device.isOn ? Color.yellow : Color(.systemGray5))
+                        .frame( width: 110,height: 110 )
+                    
+                    
+                    Image(
+                        systemName: "power"
+                    )
+                    .font(
+                        .system(size: 45)
+                    )
+                    .foregroundStyle(
+                        device.isOn
+                        ?
+                            .black
+                        :
+                                .gray
+                    )
+                    
+                }
+                
+            }
+            .buttonStyle(.plain)
+            
+            
+            
+            Text(
+                device.isOn
+                ?
+                "Ligado"
+                :
+                    "Desligado"
+            )
+            .font(
+                .title2.bold()
+            )
+            .foregroundStyle(
+                device.isOn
+                ?
+                    .green
+                :
+                        .secondary
+            )
+            
+        }
+        
+    }
+    // MARK: - Status
+    
+    
+    private var statusCard: some View {
+        
+        
+        VStack(
+            spacing: 15
+        ) {
+            
+            
+            detailRow(
+                
+                icon: "wifi",
+                
+                title: "Conexão",
+                
+                value:
+                    device.online
+                ?
+                "Online"
+                :
+                    "Offline"
+                
+            )
+            
+            
+            
+            if let signal = device.signal {
+                
+                
+                detailRow(
+                    
+                    icon: "antenna.radiowaves.left.and.right",
+                    
+                    title: "Sinal",
+                    
+                    value: "\(signal)dBm"
+                    
+                )
+                
+            }
+            
+            
+        }
+        
+        .padding()
+        
+        .background(
+            .ultraThinMaterial
+        )
+        
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 25
+            )
+        )
+        
+        
+    }
+    
+    
+    
+    // MARK: - Informações Técnicas
+    
+    
+    private var technicalCard: some View {
+        
+        
+        VStack(
+            alignment: .leading,
+            spacing: 15
+        ) {
+            
+            
+            Text(
+                "Informações do dispositivo"
+            )
+            
+            .font(
+                .headline
+            )
+            
+            
+            
+            detailRow(
+                
+                icon:"number",
+                
+                title:"ID Virtual",
+                
+                value:
+                    device.virtualID ?? "-"
+                
+            )
+            
+            
+            
+            detailRow(
+                
+                icon:"network",
+                
+                title:"IP",
+                
+                value:
+                    device.ip ?? "-"
+                
+            )
+            
+            
+            
+            detailRow(
+                
+                icon:"antenna.radiowaves.left.and.right",
+                
+                title:"MAC",
+                
+                value:
+                    device.mac ?? "-"
+                
+            )
+            
+            
+        }
+        
+        .padding()
+        
+        .background(
+            .ultraThinMaterial
+        )
+        
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 25
+            )
+        )
+        
+        
+    }
+    
+    
+    
+    private func detailRow(
+        
+        icon:String,
+        
+        title:String,
+        
+        value:String
+        
+    ) -> some View {
+        
+        
+        HStack {
+            
+            
+            Image(systemName: icon)
+            
+                .frame(
+                    width:30
+                )
+            
+            
+            
+            Text(title)
+            
+            
+            
+            Spacer()
+            
+            
+            
+            Text(value)
+            
+                .foregroundStyle(
+                    .secondary
+                )
+            
+            
+        }
+        
+    }
+    
 }
+

@@ -6,65 +6,52 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct DeviceCard: View {
 
     @Binding var device: Device
 
+    @EnvironmentObject
+    var store: DeviceStore
+    
     var body: some View {
 
         NavigationLink {
 
-            DeviceDetailView(
-                device: $device
+            DeviceDetailView(device: $device
             )
-
+            .environmentObject(store)
+            
         } label: {
 
 
-            VStack(
-                alignment: .leading,
-                spacing: 18
-            ) {
+            VStack(alignment: .leading, spacing: 18) {
 
-
-                // MARK: - Topo
 
                 HStack {
 
-
                     Image(systemName: device.icon)
-                        .font(
-                            .system(size: 28)
-                        )
+                        .font(.system(size: 28))
                         .foregroundStyle(
-                            device.isOn ?
-                            .yellow :
-                            .gray
+                            device.isOn ? .yellow : .gray
                         )
-                        .frame(
-                            width: 55,
-                            height: 55
-                        )
+                        .padding(12)
                         .background(
-                            device.isOn ?
-                            Color.yellow.opacity(0.25) :
-                            Color.gray.opacity(0.15)
+                            device.isOn
+                            ? Color.yellow.opacity(0.25) : Color.gray.opacity(0.15)
                         )
-                        .clipShape(
-                            Circle()
-                        )
+                        .clipShape(Circle())
 
 
                     Spacer()
 
 
-
                     Circle()
                         .fill(
-                            device.online ?
-                            .green :
-                            .red
+                            device.online
+                            ? .green
+                            : .red
                         )
                         .frame(
                             width: 12
@@ -73,90 +60,68 @@ struct DeviceCard: View {
                 }
 
 
-
                 Spacer()
 
 
-
-                // MARK: - Informações
-
-                VStack(
-                    alignment: .leading,
-                    spacing: 6
-                ) {
+                Text(device.name)
+                    .font(
+                        .title3.bold()
+                    )
 
 
-                    Text(device.name)
-                        .font(
-                            .title3.bold()
-                        )
-                        .lineLimit(1)
+                Text(device.room)
+                    .foregroundStyle(
+                        .secondary
+                    )
 
 
-                    Text(device.room)
-                        .foregroundStyle(
-                            .secondary
-                        )
+                if let signal = device.signal {
 
-
-
-                    if let signal = device.signal {
-
-
-                        Label(
-                            "\(signal)dBm",
-                            systemImage: "wifi"
-                        )
-                        .font(
-                            .caption
-                        )
-                        .foregroundStyle(
-                            .secondary
-                        )
-
-                    }
-
+                    Label(
+                        "\(signal)dBm",
+                        systemImage: "wifi"
+                    )
+                    .font(
+                        .caption
+                    )
 
                 }
 
 
-
-                // MARK: - Switch visual
-
-
                 HStack {
-
 
                     Spacer()
 
+                    Button {
 
-                    RoundedRectangle(
-                        cornerRadius: 20
-                    )
-                    .fill(
-                        device.isOn ?
-                        Color.yellow :
-                        Color.gray.opacity(0.4)
-                    )
-                    .frame(
-                        width: 55,
-                        height: 30
-                    )
-                    .overlay {
+                        store.toggle(device)
 
+                    } label: {
 
-                        Circle()
-                            .fill(.white)
-                            .frame(
-                                width: 26
-                            )
-                            .offset(
-                                x: device.isOn ? 12 : -12
+                        HStack {
+
+                            Image(systemName:
+                                    device.isOn
+                                  ?
+                                  "power.circle.fill"
+                                  :
+                                  "power.circle"
                             )
 
+                            Text(
+                                device.isOn
+                                ?
+                                "Ligado"
+                                :
+                                "Desligado"
+                            )
+
+                        }
+                        .font(.headline)
+                        .foregroundStyle(device.isOn ? .yellow : .secondary)
 
                     }
-
+                    .tint(.yellow)
 
                 }
 
@@ -164,17 +129,15 @@ struct DeviceCard: View {
             }
             .padding()
             .frame(
-                height: 210
+                height: 260
             )
-            .background {
+            .background(
 
+                device.isOn
+                ?
+                Color.yellow.opacity(0.18) : Color(.systemGray6)
 
-                device.isOn ?
-                Color.yellow.opacity(0.15) :
-                Color(.systemGray6)
-
-
-            }
+            )
             .clipShape(
                 RoundedRectangle(
                     cornerRadius: 28
@@ -182,8 +145,51 @@ struct DeviceCard: View {
             )
 
         }
+
+        // impede o NavigationLink de ficar azul
         .buttonStyle(.plain)
 
     }
+}
+
+#Preview {
+
+    let container =
+    try! ModelContainer(
+        for: DeviceEntity.self,
+        configurations:
+            ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+    )
+
+
+    let store =
+    DeviceStore(
+        context:
+            container.mainContext
+    )
+
+
+    DeviceCard(
+        device:
+            .constant(
+                Device(
+                    id: UUID(),
+                    name: "Teste",
+                    room: "Sala",
+                    icon: "lightbulb.fill",
+                    virtualID: nil,
+                    productID: nil,
+                    localKey: nil,
+                    ip: nil,
+                    mac: nil,
+                    online: true,
+                    signal: -40,
+                    isOn: true
+                )
+            )
+    )
+    .environmentObject(store)
 
 }
