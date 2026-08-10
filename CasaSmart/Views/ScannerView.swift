@@ -6,187 +6,100 @@
 //
 
 import SwiftUI
-import SwiftData
-
 
 struct ScannerView: View {
 
-
-@StateObject
+    @StateObject
     private var scanner = NetworkScanner()
-
-@EnvironmentObject
-    var homeVM: HomeViewModel
-
-@Environment(\.modelContext)
-    private var context
     
+    @State
+    private var showingDeviceSetup = false
+
+    @EnvironmentObject
+    private var store: DeviceStore
+
     var body: some View {
-
-
         NavigationStack {
-
-
             VStack {
-
-
                 if scanner.scanning {
-
-
                     ProgressView(
                         "Procurando dispositivos..."
                     )
-
-
                 }
 
+                List(scanner.devices) { device in
+                    HStack {
+                        VStack(
+                            alignment: .leading,
+                            spacing: 4
+                        ) {
+                            Text(device.name)
+                                .font(.headline)
 
-                List(
-                    scanner.devices
-                ) { device in
+                            Text(device.host)
+                                .foregroundStyle(.secondary)
 
-
-                    VStack(
-                        alignment: .leading,
-                        spacing: 12
-                    ) {
-
-
-                        HStack {
-
-
-                            VStack(
-                                alignment: .leading
-                            ) {
-
-
-                                Text(device.name)
-                                    .font(.headline)
-
-
-                                Text(device.host)
-                                    .foregroundStyle(.secondary)
-
-
-                                Text(device.port)
-                                    .font(.caption)
-
-
-
-                            }
-
-
-                            Spacer()
-
-
-
-                            Button {
-
-
-                                adicionar(device)
-
-
-
-                            } label: {
-
-
-                                Text("Adicionar")
-
-                            }
-                            .buttonStyle(.borderedProminent)
-
-
+                            Text(device.port)
+                                .font(.caption)
                         }
 
+                        Spacer()
 
+                        Button("Adicionar") {
+                            adicionar(device)
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
-
-
                 }
-
-
             }
-
-            .navigationTitle(
-                "Scanner Rede"
-            )
-
+            .navigationTitle("Scanner Rede")
             .toolbar {
-
-
-                Button {
-
-
-                    scanner.scan()
-
-
-                } label: {
-
-
-                    Image(
-                        systemName:
-                        "wifi"
-                    )
-
-
+                ToolbarItem(
+                    placement: .topBarLeading
+                ) {
+                    Button {
+                        showingDeviceSetup = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
                 }
 
-
+                ToolbarItem(
+                    placement: .topBarTrailing
+                ) {
+                    Button {
+                        scanner.scan()
+                    } label: {
+                        Image(systemName: "wifi")
+                    }
+                }
             }
-
-
+            .sheet(
+                isPresented: $showingDeviceSetup
+            ) {
+                DeviceSetupView()
+                    .environmentObject(store)
+            }
         }
-
     }
+
     private func adicionar(
         _ networkDevice: NetworkDevice
     ) {
-
-
         let novoDevice = Device(
-
             id: UUID(),
-
-            name:
-                networkDevice.name,
-            
-            room:
-                "Sem ambiente",
-
-            icon:
-                "lightbulb.fill",
-
-
+            name: networkDevice.name,
+            room: "Sem ambiente",
+            icon: "lightbulb.fill",
             virtualID: nil,
-
             productID: nil,
-
             localKey: nil,
-
-
-            ip:
-                networkDevice.host,
-
-
-            mac:
-                nil,
-
-
-            online:
-                true,
-
-
+            ip: networkDevice.host,
+            mac: nil,
+            online: true,
             signal: nil,
-
-
             isOn: false
-
         )
-
-
-        homeVM.add(novoDevice)
-
-        let store = DeviceStore(context: context)
 
         store.add(novoDevice)
     }

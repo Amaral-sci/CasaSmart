@@ -19,10 +19,11 @@ final class DeviceStore: ObservableObject {
 
 
 
-    @Published
-    var devices: [Device] = []
+    @Published var devices: [Device] = []
 
+    @Published var pendingDeviceIDs: Set<UUID> = []
 
+    @Published var lastCommandError: String?
 
     init(
         context: ModelContext
@@ -34,57 +35,74 @@ final class DeviceStore: ObservableObject {
 
     }
 
-
+    func isCommandPending(
+        _ device: Device
+    ) -> Bool {
+        pendingDeviceIDs.contains(
+            device.id
+        )
+    }
     // MARK: - Controle do dispositivo
 
     func toggle(
         _ device: Device
     ) {
-
         guard let index = devices.firstIndex(where: {
             $0.id == device.id
         }) else {
             return
         }
 
+        guard !pendingDeviceIDs.contains(
+            device.id
+        ) else {
+            return
+        }
 
-        // altera estado local
+        let deviceToControl = devices[index]
+        let desiredState = !deviceToControl.isOn
 
-        devices[index].isOn.toggle()
-
-
-        // salva no banco
-
-        update(
-            devices[index]
+        pendingDeviceIDs.insert(
+            device.id
         )
 
-
-        // envia comando físico
+        lastCommandError = nil
 
         Task {
+            defer {
+                pendingDeviceIDs.remove(
+                    device.id
+                )
+            }
 
             do {
-
-                try await NovaDigitalService.shared.toggle(
-                    device: devices[index]
+                try await NovaDigitalService.shared.setPower(
+                    desiredState,
+                    device: deviceToControl
                 )
 
+                guard let updatedIndex = devices.firstIndex(where: {
+                    $0.id == device.id
+                }) else {
+                    return
+                }
+
+                var updatedDevice = devices[updatedIndex]
+                updatedDevice.isOn = desiredState
+
+                update(updatedDevice)
 
             } catch {
+                lastCommandError =
+                    error.localizedDescription
 
                 print(
                     "Erro enviando comando:",
                     error.localizedDescription
                 )
-
             }
-
         }
-
     }
-    
-
     // MARK: - Buscar dispositivos
 
 
@@ -192,37 +210,33 @@ final class DeviceStore: ObservableObject {
         do {
 
 
-            if let entity =
-                try context.fetch(
-                    descriptor
-                )
+            if let entity = try context.fetch( descriptor )
                 .first {
 
-
-                entity.name =
-                device.name
+                entity.name = device.name
 
 
-                entity.room =
-                device.room
+                entity.room = device.room
 
 
-                entity.isOn =
-                device.isOn
+                entity.isOn = device.isOn
 
 
-                entity.online =
-                device.online
+                entity.online = device.online
 
 
-                entity.ip =
-                device.ip
+                entity.ip = device.ip
 
 
-                entity.mac =
-                device.mac
+                entity.mac = device.mac
 
+                entity.virtualID = device.virtualID
 
+                entity.productID = device.productID
+
+                entity.localKey = device.localKey
+
+                entity.signal = device.signal
 
                 save()
 

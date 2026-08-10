@@ -12,9 +12,15 @@ struct DeviceDetailView: View {
 
     @Binding var device: Device
 
-    @EnvironmentObject
-    var store: DeviceStore
+    @EnvironmentObject var store: DeviceStore
     
+    private var comandoEmAndamento: Bool {store.isCommandPending(device)}
+    
+    private var mostrarErroDeComando: Binding<Bool> { Binding( get: {store.lastCommandError != nil
+            }, set: { mostrando in if !mostrando {store.lastCommandError = nil
+                }
+            })
+    }
     
     var body: some View {
         
@@ -64,33 +70,21 @@ struct DeviceDetailView: View {
                     technicalCard
                     
                     NavigationLink {
-
-                        DeviceDetailView(
+                        DeviceSettingsView(
                             device: $device
                         )
                         .environmentObject(store)
 
-                        
                     } label: {
-                        
                         HStack {
-                            
                             Image(systemName: "gear")
-                            
                             Text("Configurações")
-                            
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(.ultraThinMaterial)
-                        .clipShape(
-                            RoundedRectangle(
-                                cornerRadius: 20
-                            )
-                        )
-                        
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
                     }
-                    
                     
                     
                 }
@@ -105,9 +99,18 @@ struct DeviceDetailView: View {
             "Controle"
         )
         
-        .navigationBarTitleDisplayMode(
-            .inline
-        )
+        .navigationBarTitleDisplayMode(.inline)
+        .alert( "Não foi possível enviar o comando", isPresented: mostrarErroDeComando ){
+            Button( "OK", role: .cancel) {
+                store.lastCommandError = nil
+            }
+
+        } message: {
+            Text(
+                store.lastCommandError
+                ?? "Ocorreu um erro inesperado."
+            )
+        }
         
         
     }
@@ -120,143 +123,53 @@ struct DeviceDetailView: View {
     private var header: some View {
         
         
-        VStack(
-            spacing: 15
-        ) {
-            
+        VStack(spacing: 15) {
             
             ZStack {
                 
-                
                 Circle()
-                
-                    .fill(
-                        
-                        device.isOn
-                        
-                        ?
-                        Color.yellow.opacity(0.25)
-                        
-                        :
-                            
-                            Color.gray.opacity(0.15)
-                        
-                    )
-                
-                    .frame(
-                        width: 160,
-                        height: 160
-                    )
-                
-                
+                 .fill(device.isOn ? Color.yellow.opacity(0.25) : Color.gray.opacity(0.15))
+                .frame(width: 160, height: 160)
                 
                 Image(systemName: device.icon)
-                
-                    .font(
-                        .system(size: 75)
-                    )
-                
-                    .foregroundStyle(
-                        
-                        device.isOn
-                        ?
-                            .yellow : .gray
-                        
-                    )
-                
-            }
-            
-            
+                    .font(.system(size: 75))
+                    .foregroundStyle(device.isOn ? .yellow : .gray)
+             }
             
             Text(device.name)
-            
-                .font(
-                    .largeTitle.bold()
-                )
-            
-            
+                .font(.largeTitle.bold())
             
             Text(device.room)
             
-                .font(
-                    .title3
-                )
-            
-                .foregroundStyle(
-                    .secondary
-                )
-            
-            
+                .font(.title3)
+                .foregroundStyle(.secondary)
         }
-        
     }
-    
-    
-    
     // MARK: - Botão Energia
     
     private var powerButton: some View {
         
         VStack(spacing: 15) {
-            
             Button {
-                
-                withAnimation(.spring) {
-                    store.toggle(device)
+                withAnimation(.spring) {store.toggle(device)
                     }
-
-               
-                
             } label: {
-                
                 ZStack {
-                    
                     Circle()
                         .fill(device.isOn ? Color.yellow : Color(.systemGray5))
                         .frame( width: 110,height: 110 )
                     
-                    
-                    Image(
-                        systemName: "power"
-                    )
-                    .font(
-                        .system(size: 45)
-                    )
-                    .foregroundStyle(
-                        device.isOn
-                        ?
-                            .black
-                        :
-                                .gray
-                    )
-                    
+                    Image(systemName: "power")
+                    .font(.system(size: 45))
+                    .foregroundStyle(device.isOn ? .black : .gray )
                 }
                 
             }
             .buttonStyle(.plain)
-            
-            
-            
-            Text(
-                device.isOn
-                ?
-                "Ligado"
-                :
-                    "Desligado"
-            )
-            .font(
-                .title2.bold()
-            )
-            .foregroundStyle(
-                device.isOn
-                ?
-                    .green
-                :
-                        .secondary
-            )
-            
-        }
-        
+            .disabled(comandoEmAndamento)
+           
+            Text(comandoEmAndamento ? "Enviando comando..." : (device.isOn ? "Ligado" : "Desligado"))
+       }
     }
     // MARK: - Status
     
@@ -264,10 +177,7 @@ struct DeviceDetailView: View {
     private var statusCard: some View {
         
         
-        VStack(
-            spacing: 15
-        ) {
-            
+        VStack(spacing: 15) {
             
             detailRow(
                 

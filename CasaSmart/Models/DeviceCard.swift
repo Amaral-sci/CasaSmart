@@ -15,6 +15,9 @@ struct DeviceCard: View {
     @EnvironmentObject
     var store: DeviceStore
     
+    private var comandoEmAndamento: Bool {store.isCommandPending(device)
+    }
+    
     var body: some View {
 
         NavigationLink {
@@ -48,104 +51,53 @@ struct DeviceCard: View {
 
 
                     Circle()
-                        .fill(
-                            device.online
-                            ? .green
-                            : .red
-                        )
-                        .frame(
-                            width: 12
-                        )
-
+                        .fill(device.online ? .green : .red)
+                        .frame(width: 12)
                 }
-
-
                 Spacer()
 
-
-                Text(device.name)
-                    .font(
-                        .title3.bold()
-                    )
-
-
-                Text(device.room)
-                    .foregroundStyle(
-                        .secondary
-                    )
-
-
+                Text(device.name).font(.title3.bold())
+                Text(device.room).foregroundStyle(.secondary)
+                
                 if let signal = device.signal {
 
-                    Label(
-                        "\(signal)dBm",
-                        systemImage: "wifi"
-                    )
-                    .font(
-                        .caption
-                    )
-
+                    Label("\(signal)dBm", systemImage: "wifi")
+                    .font(.caption)
                 }
-
 
                 HStack {
 
                     Spacer()
 
                     Button {
-
                         store.toggle(device)
 
                     } label: {
-
                         HStack {
+                            if comandoEmAndamento {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Image(
+                                    systemName: device.isOn ? "power.circle.fill" : "power.circle" )
+                            }
 
-                            Image(systemName:
-                                    device.isOn
-                                  ?
-                                  "power.circle.fill"
-                                  :
-                                  "power.circle"
-                            )
-
-                            Text(
-                                device.isOn
-                                ?
-                                "Ligado"
-                                :
-                                "Desligado"
-                            )
-
+                            Text( comandoEmAndamento ? "Enviando..." : ( device.isOn ? "Ligado" : "Desligado" ))
                         }
                         .font(.headline)
                         .foregroundStyle(device.isOn ? .yellow : .secondary)
-
                     }
+                    .buttonStyle(.borderless)
+                    .disabled(comandoEmAndamento)
                     .tint(.yellow)
-
                 }
-
-
             }
             .padding()
-            .frame(
-                height: 260
-            )
-            .background(
-
-                device.isOn
-                ?
-                Color.yellow.opacity(0.18) : Color(.systemGray6)
-
-            )
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: 28
-                )
-            )
+            .frame(height: 260)
+            .background(device.isOn ? Color.yellow.opacity(0.18) : Color(.systemGray6))
+            .clipShape(RoundedRectangle(cornerRadius: 28))
 
         }
-
         // impede o NavigationLink de ficar azul
         .buttonStyle(.plain)
 
@@ -154,26 +106,11 @@ struct DeviceCard: View {
 
 #Preview {
 
-    let container =
-    try! ModelContainer(
-        for: DeviceEntity.self,
-        configurations:
-            ModelConfiguration(
-                isStoredInMemoryOnly: true
-            )
-    )
+    let container = try! ModelContainer(for: DeviceEntity.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
 
 
-    let store =
-    DeviceStore(
-        context:
-            container.mainContext
-    )
-
-
-    DeviceCard(
-        device:
-            .constant(
+    let store = DeviceStore(context:container.mainContext)
+    DeviceCard(device:.constant(
                 Device(
                     id: UUID(),
                     name: "Teste",
@@ -187,9 +124,7 @@ struct DeviceCard: View {
                     online: true,
                     signal: -40,
                     isOn: true
-                )
-            )
-    )
+                )))
     .environmentObject(store)
 
 }

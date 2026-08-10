@@ -8,67 +8,26 @@
 import SwiftUI
 import SwiftData
 
-
 struct ContentView: View {
 
-
-    @Environment(\.modelContext)
-    private var context
-
-
-    @StateObject
-    private var store: DeviceStore
-
-
-
-    init() {
-
-
-        let container =
-        try! ModelContainer(
-            for: DeviceEntity.self
-        )
-
-
-        _store =
-        StateObject(
-            wrappedValue:
-                DeviceStore(
-                    context:
-                        container.mainContext
-                )
-        )
-
-
-    }
-
-
-
     var body: some View {
-
-
         HomeView()
-
-            .environmentObject(
-                store
-            )
-
-
     }
-
-
 }
 
-
 #Preview {
+    let container = try! ModelContainer(
+        for: DeviceEntity.self,
+        configurations: ModelConfiguration(
+            isStoredInMemoryOnly: true
+        )
+    )
 
+    let store = DeviceStore(
+        context: container.mainContext
+    )
 
     ContentView()
-
-        .modelContainer(
-            for: DeviceEntity.self,
-            inMemory: true
-        )
-
-
+        .environmentObject(store)
+        .modelContainer(container)
 }

@@ -7,26 +7,33 @@
 import SwiftUI
 import SwiftData
 
-
 @main
 struct CasaSmartApp: App {
 
+    private let container: ModelContainer
 
-    var body: some Scene {
+    @StateObject
+    private var store: DeviceStore
 
-
-        WindowGroup {
-
-
-            ContentView()
-
-
-        }
-        .modelContainer(
+    init() {
+        let container = try! ModelContainer(
             for: DeviceEntity.self
         )
 
+        self.container = container
 
+        _store = StateObject(
+            wrappedValue: DeviceStore(
+                context: container.mainContext
+            )
+        )
     }
 
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(store)
+        }
+        .modelContainer(container)
+    }
 }

@@ -9,239 +9,228 @@ import SwiftUI
 
 
 struct DeviceSettingsView: View {
-
-
+    
+    @EnvironmentObject var store: DeviceStore
+    
     @Binding var device: Device
-
-
+    
+    @State private var testandoConexao = false
+    @State private var resultadoConexao: String?
+    
     @State private var nome: String = ""
     @State private var ambiente: String = ""
-
-
-
+    @State private var ip = ""
+    @State private var virtualID = ""
+    @State private var productID = ""
+    @State private var localKey = ""
+    
+    
     var body: some View {
-
-
+        
+        
+        
+        
         Form {
-
-
             // MARK: - Geral
-
+            
             Section(
                 "Dispositivo"
             ) {
-
-
+                
+                
                 TextField(
                     "Nome",
                     text: $nome
                 )
-
-
+                
+                
                 TextField(
                     "Ambiente",
                     text: $ambiente
                 )
-
-
+                
+                
             }
-
-
-
-            // MARK: - Rede
-
-            Section(
-                "Rede"
-            ) {
-
-
-                infoRow(
-                    titulo: "IP",
-                    valor: device.ip ?? "-"
+            
+            Section("Rede") {
+                TextField(
+                    "IP",
+                    text: $ip
                 )
-
+                .keyboardType(.numbersAndPunctuation)
 
                 infoRow(
                     titulo: "MAC",
                     valor: device.mac ?? "-"
                 )
 
-
                 infoRow(
                     titulo: "Sinal",
-                    valor:
-                        device.signal != nil
-                        ?
-                        "\(device.signal!) dBm"
-                        :
-                        "-"
+                    valor: device.signal != nil
+                    ? "\(device.signal!) dBm"
+                    : "-"
                 )
-
-
             }
-
-
-
+            
             // MARK: - Tuya
-
-            Section(
-                "NovaDigital / Tuya"
-            ) {
-
-
-                infoRow(
-                    titulo: "Product ID",
-                    valor:
-                        device.productID ?? "-"
+            
+            Section("NovaDigital / Tuya") {
+                TextField(
+                    "Product ID",
+                    text: $productID
                 )
 
-
-
-                infoRow(
-                    titulo: "Virtual ID",
-                    valor:
-                        device.virtualID ?? "-"
+                TextField(
+                    "Virtual ID",
+                    text: $virtualID
                 )
 
-
-
-                infoRow(
-                    titulo: "Local Key",
-                    valor:
-                        device.localKey ?? "-"
+                SecureField(
+                    "Local Key",
+                    text: $localKey
                 )
-
-
             }
-
-
-
+            
+            
             // MARK: - Teste
-
-            Section {
-
-
+            
+            Section("Conexão") {
                 Button {
-
-
                     testarConexao()
-
-
                 } label: {
-
-
                     HStack {
-
-
                         Image(
-                            systemName:
-                                "wifi"
+                            systemName: "wifi"
                         )
-
-
+                        
                         Text(
-                            "Testar conexão"
+                            testandoConexao
+                            ? "Testando conexão..."
+                            : "Testar conexão"
                         )
-
-
+                        
+                        Spacer()
+                        
+                        if testandoConexao {
+                            ProgressView()
+                        }
                     }
-
                 }
-
-
+                .disabled(testandoConexao || optionalValue(ip) == nil)
+                
+                if let resultadoConexao {
+                    Text(resultadoConexao)
+                        .font(.footnote)
+                        .foregroundStyle(
+                            device.online
+                            ? .green
+                            : .red
+                        )
+                }
             }
-
-
-
+            
+            
+            
         }
-
+        
         .navigationTitle(
             "Configurações"
         )
-
+        
         .navigationBarTitleDisplayMode(
             .inline
         )
-
+        
         .onAppear {
-
-
+            
+            
             nome = device.name
-
             ambiente = device.room
-
-
+            ip = device.ip ?? ""
+            virtualID = device.virtualID ?? ""
+            productID = device.productID ?? ""
+            localKey = device.localKey ?? ""
+            
+            
         }
-
-        .onDisappear {
-
-
-            salvarAlteracoes()
-
+        
+        .toolbar {
+            
+            ToolbarItem(
+                placement: .topBarTrailing
+            ) {
+                
+                Button("Salvar") {
+                    
+                    salvarAlteracoes()
+                    
+                }
+                
+            }
+            
         }
-
-
+        
     }
-
-
-
+    
+    
+    
     private func salvarAlteracoes() {
-
-
         device.name = nome
-
         device.room = ambiente
+        device.ip = optionalValue(ip)
+        device.virtualID = optionalValue(virtualID)
+        device.productID = optionalValue(productID)
+        device.localKey = optionalValue(localKey)
 
-
+        store.update(device)
     }
-
-
-
+    
+    
     private func testarConexao() {
-
-
-        print(
-            "Testando conexão com \(device.name)"
-        )
-
-
-        // Futuro:
-        // NovaDigitalService.shared.ping(device)
-
-    }
-
-
-
-
-    private func infoRow(
-
-        titulo:String,
-
-        valor:String
-
-    ) -> some View {
-
-
-        HStack {
-
-
-            Text(titulo)
-
-
-            Spacer()
-
-
-            Text(valor)
-
-                .foregroundStyle(
-                    .secondary
-                )
-
-
+        guard !testandoConexao else {
+            return
         }
-
-
+        
+        testandoConexao = true
+        resultadoConexao = nil
+        
+        var deviceToTest = device
+        deviceToTest.ip = optionalValue(ip)
+        
+        Task {
+            let connected = await NovaDigitalService.shared.ping(
+                device: deviceToTest
+            )
+            
+            testandoConexao = false
+            
+            device.online = connected
+            
+            resultadoConexao = connected
+            ? "Dispositivo encontrado na rede."
+            : "Não foi possível conectar ao dispositivo."
+            
+            store.update(device)
+        }
     }
+    
+    
+    private func optionalValue( _ value: String ) -> String? { let cleaned = value.trimmingCharacters(in: .whitespacesAndNewlines)
 
-
+        return cleaned.isEmpty ? nil : cleaned
+    }
+    
+    private func infoRow(
+        titulo: String,
+        valor: String
+    ) -> some View {
+        HStack {
+            Text(titulo)
+            
+            Spacer()
+            
+            Text(valor)
+                .foregroundStyle(.secondary)
+        }
+    }
 }
