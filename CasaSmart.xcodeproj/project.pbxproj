@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4B035994302CA49B008295C0 /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = 4B035993302CA49B008295C0 /* Crypto */; };
+		4B035996302CA49B008295C0 /* CryptoExtras in Frameworks */ = {isa = PBXBuildFile; productRef = 4B035995302CA49B008295C0 /* CryptoExtras */; };
+		4B035998302CA49B008295C0 /* _CryptoExtras in Frameworks */ = {isa = PBXBuildFile; productRef = 4B035997302CA49B008295C0 /* _CryptoExtras */; };
+		4B03599B302CA50D008295C0 /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 4B03599A302CA50D008295C0 /* CryptoSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		4BEC57EA3025151300F664E7 /* CasaSmart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CasaSmart.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +30,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B035996302CA49B008295C0 /* CryptoExtras in Frameworks */,
+				4B03599B302CA50D008295C0 /* CryptoSwift in Frameworks */,
+				4B035994302CA49B008295C0 /* Crypto in Frameworks */,
+				4B035998302CA49B008295C0 /* _CryptoExtras in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +76,10 @@
 			);
 			name = CasaSmart;
 			packageProductDependencies = (
+				4B035993302CA49B008295C0 /* Crypto */,
+				4B035995302CA49B008295C0 /* CryptoExtras */,
+				4B035997302CA49B008295C0 /* _CryptoExtras */,
+				4B03599A302CA50D008295C0 /* CryptoSwift */,
 			);
 			productName = CasaSmart;
 			productReference = 4BEC57EA3025151300F664E7 /* CasaSmart.app */;
@@ -94,6 +109,10 @@
 			);
 			mainGroup = 4BEC57E13025151300F664E7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4B035992302CA49B008295C0 /* XCRemoteSwiftPackageReference "swift-crypto" */,
+				4B035999302CA50D008295C0 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4BEC57EB3025151300F664E7 /* Products */;
 			projectDirPath = "";
@@ -332,6 +351,48 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4B035992302CA49B008295C0 /* XCRemoteSwiftPackageReference "swift-crypto" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-crypto.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.1;
+			};
+		};
+		4B035999302CA50D008295C0 /* XCRemoteSwiftPackageReference "CryptoSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzyzanowskim/CryptoSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4B035993302CA49B008295C0 /* Crypto */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4B035992302CA49B008295C0 /* XCRemoteSwiftPackageReference "swift-crypto" */;
+			productName = Crypto;
+		};
+		4B035995302CA49B008295C0 /* CryptoExtras */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4B035992302CA49B008295C0 /* XCRemoteSwiftPackageReference "swift-crypto" */;
+			productName = CryptoExtras;
+		};
+		4B035997302CA49B008295C0 /* _CryptoExtras */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4B035992302CA49B008295C0 /* XCRemoteSwiftPackageReference "swift-crypto" */;
+			productName = _CryptoExtras;
+		};
+		4B03599A302CA50D008295C0 /* CryptoSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4B035999302CA50D008295C0 /* XCRemoteSwiftPackageReference "CryptoSwift" */;
+			productName = CryptoSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4BEC57E23025151300F664E7 /* Project object */;
 }

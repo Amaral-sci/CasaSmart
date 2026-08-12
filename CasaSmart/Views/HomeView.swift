@@ -11,27 +11,16 @@ import SwiftData
 struct HomeView: View {
     
     
-    @EnvironmentObject
-    var store: DeviceStore
+    @EnvironmentObject var store: DeviceStore
     
 //    @Environment(\.modelContext)
 //    private var context
 
     
-    private var favoritos: [Device] {
-        
-        store.devices.prefix(2).map { $0 }
-        
+    private var favoritos: [Device] { store.devices.prefix(2).map { $0 }
     }
-    
-    
-    private var ambientes: [String] {
-        
-        Array(
-            Set(store.devices.map { $0.room })
-        )
+    private var ambientes: [String] { Array(Set(store.devices.map { $0.room }))
         .sorted()
-        
     }
     
     var body: some View {
@@ -69,8 +58,61 @@ struct HomeView: View {
                         
                         
                         // MARK: - Status
-                        
-                        statusCard
+                  
+                       // statusCard
+                    
+
+                        // MARK: - Teste Tuya
+
+                        Button {
+                            
+                            let device = Device(
+                                id: UUID(),
+                                name: "Luz do corredor",
+                                room: "Corredor",
+                                icon: "lightbulb",
+                                virtualID: "ebfc259a65e8950567imiu",
+                                productID: "qft1f8ggon7cpomd",
+                                localKey: "i{SSXgXzdw4]XZ]i",
+                                ip: "192.168.18.8",
+                                mac: "3C:0B:59:73:B8:42",
+                                online: true,
+                                signal: nil,
+                                isOn: false
+                            )
+                            
+                            Task {
+                                await NovaDigitalService.shared.testHandshake(
+                                    device: device
+                                )
+                            }
+                            
+                        } label: {
+                            
+                            HStack {
+                                
+                                Image(systemName: "wifi")
+                                
+                                Text("Testar conexão Tuya")
+                            }
+                            .frame(
+                                maxWidth: .infinity
+                            )
+                            .padding()
+                            .background(
+                                .ultraThinMaterial
+                            )
+                            .clipShape(
+                                RoundedRectangle(
+                                    cornerRadius: 16
+                                )
+                            )
+                        }
+
+
+                        // MARK: - Favoritos
+
+                        // MARK: - Favoritos
                         
                         
                         
@@ -305,6 +347,8 @@ struct HomeView: View {
         }
         
         
+    
+    
         
         
         // MARK: - Sala

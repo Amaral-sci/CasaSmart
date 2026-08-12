@@ -11,12 +11,12 @@ import SwiftUI
 struct DeviceSettingsView: View {
     
     @EnvironmentObject var store: DeviceStore
-    
+    @Environment(\.dismiss) private var dismiss
     @Binding var device: Device
     
     @State private var testandoConexao = false
     @State private var resultadoConexao: String?
-    
+    @State private var mostrandoConfirmacaoDeExclusao = false
     @State private var nome: String = ""
     @State private var ambiente: String = ""
     @State private var ip = ""
@@ -129,7 +129,19 @@ struct DeviceSettingsView: View {
                 }
             }
             
-            
+            Section {
+                Button(
+                    role: .destructive
+                ) {
+                    mostrandoConfirmacaoDeExclusao = true
+
+                } label: {
+                    Label(
+                        "Excluir dispositivo",
+                        systemImage: "trash"
+                    )
+                }
+            }
             
         }
         
@@ -169,7 +181,29 @@ struct DeviceSettingsView: View {
             }
             
         }
-        
+        .alert(
+            "Excluir dispositivo?",
+            isPresented: $mostrandoConfirmacaoDeExclusao
+        ) {
+            Button(
+                "Excluir",
+                role: .destructive
+            ) {
+                store.delete(device)
+                dismiss()
+            }
+
+            Button(
+                "Cancelar",
+                role: .cancel
+            ) {
+            }
+
+        } message: {
+            Text(
+                "Essa ação remove o dispositivo do CasaSmart."
+            )
+        }
     }
     
     
