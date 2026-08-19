@@ -10,12 +10,15 @@ import Network
 
 struct DeviceSetupView: View {
 
+    let networkDevice: NetworkDevice?
+    
     @EnvironmentObject
     private var store: DeviceStore
 
     @Environment(\.dismiss)
     private var dismiss
-
+    
+    
     @State private var name = ""
     @State private var room = ""
     @State private var ip = ""
@@ -112,6 +115,25 @@ struct DeviceSetupView: View {
                     .disabled(!canSave)
                 }
             }
+            .task {
+
+                guard let networkDevice else {
+                    return
+                }
+
+                name =
+                networkDevice.name
+
+                ip =
+                networkDevice.host
+
+                virtualID =
+                networkDevice.virtualID ?? ""
+
+                productID =
+                networkDevice.productID ?? ""
+
+            }
         }
     }
 
@@ -140,7 +162,7 @@ struct DeviceSetupView: View {
             localKey: optionalValue(localKey),
             ip: cleanedIP,
             mac: nil,
-            online: false,
+            online: true,
             signal: nil,
             isOn: false
         )

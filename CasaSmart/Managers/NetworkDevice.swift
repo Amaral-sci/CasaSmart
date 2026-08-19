@@ -4,15 +4,13 @@
 //
 //  Created by Jonathan Amaral on 07/08/26.
 //
-
+//
 import Foundation
 
 
-struct NetworkDevice: Identifiable {
+struct NetworkDevice: Identifiable, Codable {
 
-
-    let id = UUID()
-
+    var id = UUID()
 
     var name: String
 
@@ -21,11 +19,26 @@ struct NetworkDevice: Identifiable {
     var port: String
 
 
-    // Informações extras
+    var manufacturer: String
 
-    var manufacturer: String?
+    var isTuya: Bool
 
-    var isTuya: Bool = false
 
+    var virtualID: String?
+
+    var productID: String?
+
+    var version: String?
+
+    var mac: String?
+
+
+    // NOVO
+    var localKey: String?
+
+
+    // Estado
+
+    var isOn: Bool = false
 
 }

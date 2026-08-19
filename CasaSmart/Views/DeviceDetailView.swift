@@ -145,32 +145,136 @@ struct DeviceDetailView: View {
                 .foregroundStyle(.secondary)
         }
     }
-    // MARK: - Botão Energia
     
+    // MARK: - Botão Energia
+
     private var powerButton: some View {
-        
-        VStack(spacing: 15) {
-            Button {
-                withAnimation(.spring) {store.toggle(device)
-                    }
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(device.isOn ? Color.yellow : Color(.systemGray5))
-                        .frame( width: 110,height: 110 )
-                    
-                    Image(systemName: "power")
-                    .font(.system(size: 45))
-                    .foregroundStyle(device.isOn ? .black : .gray )
-                }
-                
+
+        Button {
+
+            Task {
+                await store.toggleCloud(device)
             }
-            .buttonStyle(.plain)
-            .disabled(comandoEmAndamento)
-           
-            Text(comandoEmAndamento ? "Enviando comando..." : (device.isOn ? "Ligado" : "Desligado"))
-       }
+
+        } label: {
+
+            HStack(spacing: 16) {
+
+                ZStack {
+
+                    RoundedRectangle(
+                        cornerRadius: 18,
+                        style: .continuous
+                    )
+                    .fill(
+                        device.isOn
+                        ? Color.yellow.opacity(0.20)
+                        : Color(.systemGray5)
+                    )
+                    .frame(
+                        width: 64,
+                        height: 64
+                    )
+
+                    Image(systemName: device.icon)
+                        .font(
+                            .system(
+                                size: 30,
+                                weight: .medium
+                            )
+                        )
+                        .foregroundStyle(
+                            device.isOn
+                            ? .yellow
+                            : .secondary
+                        )
+                }
+
+                VStack(
+                    alignment: .leading,
+                    spacing: 5
+                ) {
+
+                    Text(
+                        comandoEmAndamento
+                        ? "Enviando comando..."
+                        : device.isOn
+                        ? "Ligado"
+                        : "Desligado"
+                    )
+                    .font(.title)
+                    .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                // Indicador estilo Home
+                ZStack {
+
+                    Circle()
+                        .fill(
+                            device.isOn
+                            ? Color.green
+                            : Color(.systemGray4)
+                        )
+                        .frame(
+                            width: 30,
+                            height: 30
+                        )
+
+                    if device.isOn {
+                        Image(systemName: "checkmark")
+                            .font(
+                                .system(
+                                    size: 14,
+                                    weight: .bold
+                                )
+                            )
+                            .foregroundStyle(.white)
+                    }
+                }
+            }
+            .padding(16)
+            .background(
+                .ultraThinMaterial
+            )
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: 24,
+                    style: .continuous
+                )
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(comandoEmAndamento)
     }
+//    private var powerButton: some View {
+//        
+//        VStack(spacing: 15) {
+//            Button {
+//                Task {
+//                    withAnimation(.spring) {
+//                    }
+//                    await store.toggleCloud(device)
+//                }
+//            } label: {
+//                ZStack {
+//                    Circle()
+//                        .fill(device.isOn ? Color.yellow : Color(.systemGray5))
+//                        .frame( width: 110,height: 110 )
+//                    
+//                    Image(systemName: "power")
+//                    .font(.system(size: 45))
+//                    .foregroundStyle(device.isOn ? .black : .gray )
+//                }
+//                
+//            }
+//            .buttonStyle(.plain)
+//            .disabled(comandoEmAndamento)
+//           
+//            Text(comandoEmAndamento ? "Enviando comando..." : (device.isOn ? "Ligado" : "Desligado"))
+//       }
+//    }
     // MARK: - Status
     
     

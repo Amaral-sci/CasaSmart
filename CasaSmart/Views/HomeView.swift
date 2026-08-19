@@ -65,55 +65,47 @@ struct HomeView: View {
                         // MARK: - Teste Tuya
 
                         Button {
-                            
-                            let device = Device(
-                                id: UUID(),
-                                name: "Luz do corredor",
-                                room: "Corredor",
-                                icon: "lightbulb",
-                                virtualID: "ebfc259a65e8950567imiu",
-                                productID: "qft1f8ggon7cpomd",
-                                localKey: "i{SSXgXzdw4]XZ]i",
-                                ip: "192.168.18.8",
-                                mac: "3C:0B:59:73:B8:42",
-                                online: true,
-                                signal: nil,
-                                isOn: false
-                            )
-                            
+
                             Task {
-                                await NovaDigitalService.shared.testHandshake(
-                                    device: device
-                                )
+
+                                do {
+
+                                    let token =
+                                    try await TuyaCloudService.shared.getToken()
+
+                                    print("====================")
+                                    print("TUYA CLOUD TOKEN OK")
+                                    print(token)
+                                    print("====================")
+
+                                } catch {
+
+                                    print("====================")
+                                    print("ERRO TUYA CLOUD")
+                                    print(error)
+                                    print("====================")
+                                }
+
                             }
-                            
+
                         } label: {
-                            
+
                             HStack {
-                                
-                                Image(systemName: "wifi")
-                                
-                                Text("Testar conexão Tuya")
+
+                                Image(systemName: "cloud")
+
+                                Text("Testar Tuya Cloud")
                             }
-                            .frame(
-                                maxWidth: .infinity
-                            )
+                            .frame(maxWidth: .infinity)
                             .padding()
-                            .background(
-                                .ultraThinMaterial
-                            )
+                            .background(.ultraThinMaterial)
                             .clipShape(
-                                RoundedRectangle(
-                                    cornerRadius: 16
-                                )
+                                RoundedRectangle(cornerRadius: 16)
                             )
                         }
 
 
-                        // MARK: - Favoritos
-
-                        // MARK: - Favoritos
-                        
+            
                         
                         
                         // MARK: - Favoritos

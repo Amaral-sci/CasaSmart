@@ -21,6 +21,8 @@ struct Device: Identifiable, Hashable {
 
     var virtualID: String?
 
+    var version: String?
+
     var productID: String?
 
     var localKey: String?

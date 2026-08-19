@@ -171,7 +171,8 @@ final class TuyaFrame {
         command: UInt32,
         payload: Data,
         key: Data,
-        deviceResponse: Bool
+        deviceResponse: Bool,
+        hmacMode: TuyaFrame.HMACMode = .fullFrame
     ) -> Data {
 
 
@@ -245,11 +246,56 @@ final class TuyaFrame {
         print("================================")
         print("HMAC HANDSHAKE FRAME SIZE:", frame.count)
 
-        let hmac = Data(
+        let hmacData: Data
+
+
+        switch hmacMode {
+
+
+        case .payload:
+
+            hmacData = payload
+
+
+
+        case .fullFrame:
+
+            hmacData = frame
+
+
+
+        case .handshakeStart:
+
+            var temp = Data()
+
+            temp.append(uint32BE(sequence))
+
+            temp.append(payload)
+
+            hmacData = temp
+        }
+
+
+
+        print("================================")
+        print("HMAC INPUT")
+        print("MODE:", hmacMode)
+        print("SIZE:", hmacData.count)
+        print(hmacData.map {String(format:"%02X",$0)}
+            .joined(separator:" "))
+        print("================================")
+
+        let authKey = Data(
             HMAC<SHA256>.authenticationCode(
-                for: frame,
+                for: Data("3.4".utf8),
                 using: SymmetricKey(data:key)
             )
+        )
+        
+        let hmac = Data(
+            HMAC<SHA256>.authenticationCode(
+                for: hmacData,
+                using: SymmetricKey(data:authKey)            )
         )
         
         print("HMAC RESULT:")

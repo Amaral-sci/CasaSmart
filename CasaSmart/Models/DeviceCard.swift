@@ -66,30 +66,63 @@ struct DeviceCard: View {
                 }
 
                 HStack {
-
+                    
                     Spacer()
-
+                    
                     Button {
-                        store.toggle(device)
-
+                        
+                        Task {
+                            await store.toggleCloud(device)
+                        }
+                        
                     } label: {
-                        HStack {
+                        
+                        HStack(spacing: 8) {
+                            
                             if comandoEmAndamento {
+                                
                                 ProgressView()
                                     .controlSize(.small)
+                                
                             } else {
+                                
                                 Image(
-                                    systemName: device.isOn ? "power.circle.fill" : "power.circle" )
+                                    systemName: device.isOn
+                                    ? "power.circle.fill"
+                                    : "power.circle"
+                                )
+                                .font(.system(size: 18, weight: .medium))
+                                
                             }
-
-                            Text( comandoEmAndamento ? "Enviando..." : ( device.isOn ? "Ligado" : "Desligado" ))
+                            
+                            Text(
+                                comandoEmAndamento
+                                ? "Enviando..."
+                                : device.isOn
+                                ? "Ligado"
+                                : "Desligado"
+                            )
+                            .font(.subheadline.weight(.medium))
                         }
-                        .font(.headline)
-                        .foregroundStyle(device.isOn ? .yellow : .secondary)
+                        .foregroundStyle(
+                            device.isOn
+                            ? .white
+                            : .primary
+                        )
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 9)
+                        .background(
+                            device.isOn
+                            ? Color.yellow
+                            : Color(.systemGray5)
+                        )
+                        .clipShape(
+                            Capsule()
+                        )
+                        
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.plain)
                     .disabled(comandoEmAndamento)
-                    .tint(.yellow)
                 }
             }
             .padding()
@@ -111,20 +144,20 @@ struct DeviceCard: View {
 
     let store = DeviceStore(context:container.mainContext)
     DeviceCard(device:.constant(
-                Device(
-                    id: UUID(),
-                    name: "Teste",
-                    room: "Sala",
-                    icon: "lightbulb.fill",
-                    virtualID: nil,
-                    productID: nil,
-                    localKey: nil,
-                    ip: nil,
-                    mac: nil,
-                    online: true,
-                    signal: -40,
-                    isOn: true
-                )))
+        Device(
+            id: UUID(),
+            name: "Teste",
+            room: "Sala",
+            icon: "lightbulb.fill",
+            virtualID: "ebfc259a65e8950567imiu",
+            productID: nil,
+            localKey: nil,
+            ip: nil,
+            mac: nil,
+            online: true,
+            signal: -40,
+            isOn: true
+        )))
     .environmentObject(store)
 
 }

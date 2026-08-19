@@ -307,7 +307,9 @@ final class TuyaHandshake {
             command: 0x05,
             payload: encryptedFinish,
             key: localKey,
-            deviceResponse: false
+            deviceResponse: false,
+            hmacMode: .payload
+
         )
         
         print("================================")
@@ -391,11 +393,14 @@ final class TuyaHandshake {
         print("START AES:",encrypted.count,"bytes")
 
 
-        return TuyaFrame.shared.makeFrame(
+        let frame = TuyaFrame.shared.makeHandshakeFrame(
             sequence: sequence,
             command: 0x03,
             payload: encrypted,
             key: localKey,
-            hmacMode: .handshakeStart        )
+            deviceResponse: false,
+            hmacMode: .handshakeStart
+        )
+        return frame
     }
 }

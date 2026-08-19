@@ -30,8 +30,11 @@ final class DeviceDetector {
 
             host: ip,
 
-            port: ""
+            port: "",
 
+            manufacturer: "Desconhecido",
+
+            isTuya: false
         )
 
 

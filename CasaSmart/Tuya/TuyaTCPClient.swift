@@ -191,7 +191,7 @@ final class TuyaTCPClient {
     // MARK: - Receive
     
     
-    func receive(
+    nonisolated func receive(
         connection: NWConnection,
         timeout: TimeInterval = 5
     ) async throws -> Data {

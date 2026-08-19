@@ -42,6 +42,84 @@ final class DeviceStore: ObservableObject {
             device.id
         )
     }
+   
+    // MARK: - Controle Tuya Cloud
+
+    func toggleCloud(
+        _ device: Device
+    ) async {
+
+        guard let index = devices.firstIndex(where: {
+            $0.id == device.id
+        }) else {
+            return
+        }
+
+
+        guard !pendingDeviceIDs.contains(device.id) else {
+            return
+        }
+
+
+        let deviceToControl = devices[index]
+
+        let desiredState = !deviceToControl.isOn
+
+
+        pendingDeviceIDs.insert(device.id)
+
+        lastCommandError = nil
+
+
+        defer {
+
+            Task { @MainActor in
+
+                pendingDeviceIDs.remove(device.id)
+
+            }
+        }
+
+
+        do {
+
+            guard let deviceID = deviceToControl.virtualID,
+                  !deviceID.isEmpty else {
+
+                lastCommandError = "Sem Device ID Tuya"
+
+                return
+            }
+
+
+            try await TuyaCloudService.shared.sendCommand(
+                deviceID: deviceID,
+                state: desiredState
+            )
+
+            var updatedDevice = deviceToControl
+
+            updatedDevice.isOn = desiredState
+
+
+            update(updatedDevice)
+
+
+        } catch {
+
+            lastCommandError =
+            error.localizedDescription
+
+
+            print(
+                "Erro Tuya Cloud:",
+                error.localizedDescription
+            )
+        }
+    }
+    
+    
+    
     // MARK: - Controle do dispositivo
 
     func toggle(
