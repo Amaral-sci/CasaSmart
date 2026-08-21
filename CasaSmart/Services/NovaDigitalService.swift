@@ -278,8 +278,158 @@ final class NovaDigitalService {
         print("COMANDO ENVIADO:", isOn ? "ON" : "OFF")
         print("================================")
     }
+    
+    // MARK: -
 
- 
+    private func parsePowerState(
+        _ data: Data,
+        sessionKey: Data
+    ) throws -> Bool {
+
+
+        let frame =
+        try TuyaFrame.shared.parse(
+            data
+        )
+
+
+        let decrypted =
+        try TuyaCrypto.shared.decryptECB(
+            frame.payload,
+            key: sessionKey
+        )
+
+        print("==============================")
+        print("PAYLOAD DESCRIPTOGRAFADO")
+        print(
+            String(data: decrypted, encoding: .utf8)
+            ?? "Não convertido para texto"
+        )
+        print("==============================")
+
+        guard
+            let jsonStart =
+                decrypted.firstIndex(
+                    of: UInt8(ascii: "{")
+                )
+        else {
+
+            throw NovaDigitalError.respostaInvalida
+        }
+
+
+        let jsonData =
+        decrypted[jsonStart...]
+
+
+        let object =
+        try JSONSerialization.jsonObject(
+            with: jsonData
+        )
+
+
+        guard let dictionary =
+                object as? [String:Any]
+        else {
+
+            throw NovaDigitalError.respostaInvalida
+        }
+
+
+
+        if let dps =
+            dictionary["dps"]
+                as? [String:Any]
+        {
+
+
+            if let state =
+                dps["switch_1"]
+                    as? Bool
+            {
+
+                return state
+            }
+
+
+            if let state =
+                dps["1"]
+                    as? Bool
+            {
+
+                return state
+            }
+        }
+
+
+        throw NovaDigitalError.respostaInvalida
+    }
+
+    // MARK: - Buscar estado real
+
+    func getPowerState(
+        device: Device
+    ) async throws -> Bool {
+
+        guard let ip = device.ip,
+              !ip.isEmpty else {
+            throw NovaDigitalError.ipAusente
+        }
+
+        guard let localKeyString = device.localKey,
+              !localKeyString.isEmpty else {
+            throw NovaDigitalError.localKeyAusente
+        }
+
+
+        let localKey = try TuyaCrypto.shared.makeAESKey(
+            from: localKeyString
+        )
+
+
+        let connection =
+        try await TuyaTCPClient.shared.connect(
+            ip: ip
+        )
+
+
+        defer {
+            connection.cancel()
+        }
+
+
+        let sessionKey =
+        try await TuyaHandshake.shared.performHandshake(
+            connection: connection,
+            localKey: localKey
+        )
+
+
+        let packet =
+        try makeQueryPacket(
+            device: device,
+            sessionKey: sessionKey,
+            localKey: localKey
+        )
+
+
+        try await TuyaTCPClient.shared.send(
+            packet,
+            connection: connection
+        )
+
+
+        let response =
+        try await TuyaTCPClient.shared.receive(
+            connection: connection
+        )
+
+
+        return try parsePowerState(
+            response,
+            sessionKey: sessionKey
+        )
+    }
     // MARK: - CONTROL
 
     private func makeControlPacket(
@@ -309,7 +459,7 @@ final class NovaDigitalService {
 
             "dps": [
 
-                "1": isOn
+                "switch_1": isOn
             ]
         ]
 
@@ -360,8 +510,71 @@ final class NovaDigitalService {
     }
 
 
-    
-   
+    // MARK: -
+
+    private func makeQueryPacket(
+        device: Device,
+        sessionKey: Data,
+        localKey: Data
+    ) throws -> Data {
+
+
+        let json:[String:Any] = [
+
+            "devId": device.virtualID ?? "",
+
+            "uid": device.virtualID ?? "",
+
+            "t":
+                String(
+                    Int(Date().timeIntervalSince1970)
+                )
+        ]
+
+
+        let jsonData =
+        try JSONSerialization.data(
+            withJSONObject: json
+        )
+
+
+        var plaintext = Data()
+
+
+        plaintext.append(
+            Data("3.4".utf8)
+        )
+
+
+        plaintext.append(
+            Data(
+                repeating: 0,
+                count: 12
+            )
+        )
+
+
+        plaintext.append(
+            jsonData
+        )
+
+
+        let encrypted =
+        try TuyaCrypto.shared.encryptECB(
+            plaintext,
+            key: sessionKey,
+            padding: .pkcs7
+        )
+
+
+        return TuyaFrame.shared.makeFrame(
+            sequence: nextSequence(),
+            command: 0x0A,
+            payload: encrypted,
+            key: localKey,
+            hmacMode: .fullFrame
+        )
+    }
 
     // MARK: - HEX String -> Data
 

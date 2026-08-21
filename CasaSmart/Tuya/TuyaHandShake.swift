@@ -45,6 +45,7 @@ final class TuyaHandshake {
         // 2. START 0x03
         // =====================================================
         
+    //    let startSequence: UInt32 = 0
         let startSequence = UInt32.random( in: 1...UInt32.max )
         
         let startPacket = try makeHandshakeStartPacket(
@@ -299,7 +300,8 @@ final class TuyaHandshake {
         let finishHMAC = Data(HMAC<SHA256>.authenticationCode(for: finishData, using: SymmetricKey(data: localKey)))
         
         let encryptedFinish = try TuyaCrypto.shared.encryptECB(finishHMAC, key: localKey, padding: .noPadding)
-        
+       
+  //      let finishSequence: UInt32 = 1
         let finishSequence = UInt32.random( in: 1...UInt32.max )
         
         let finishPacket = TuyaFrame.shared.makeHandshakeFrame(
@@ -389,7 +391,7 @@ final class TuyaHandshake {
 
         let encrypted = try TuyaCrypto.shared.encryptECB(plaintext, key: localKey,            padding: .noPadding)
 
-
+        print("AES PAYLOAD REAL:", encrypted.count)
         print("START AES:",encrypted.count,"bytes")
 
 

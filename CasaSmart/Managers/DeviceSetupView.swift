@@ -121,17 +121,15 @@ struct DeviceSetupView: View {
                     return
                 }
 
-                name =
-                networkDevice.name
+                name = networkDevice.name
 
-                ip =
-                networkDevice.host
+                ip = networkDevice.host
 
-                virtualID =
-                networkDevice.virtualID ?? ""
+                virtualID = networkDevice.virtualID ?? ""
 
-                productID =
-                networkDevice.productID ?? ""
+                productID = networkDevice.productID ?? ""
+
+                localKey = networkDevice.localKey ?? ""
 
             }
         }
@@ -166,7 +164,18 @@ struct DeviceSetupView: View {
             signal: nil,
             isOn: false
         )
-
+        
+        
+        print("==============================")
+        print("DEVICE SETUP SALVANDO")
+        print("Nome:", name)
+        print("IP:", ip)
+        print("VirtualID:", virtualID)
+        print("ProductID:", productID)
+        print("LocalKey:", localKey)
+        print("==============================")
+        
+        
         store.add(device)
 
         dismiss()

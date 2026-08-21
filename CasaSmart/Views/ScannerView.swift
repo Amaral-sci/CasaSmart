@@ -163,8 +163,8 @@ struct ScannerView: View {
 
             productID: networkDevice.productID,
 
-            localKey: nil,
-
+            localKey: networkDevice.localKey,
+            
             ip: networkDevice.host,
 
             mac: networkDevice.mac,
@@ -176,7 +176,15 @@ struct ScannerView: View {
             isOn: false
         )
 
-
+        print("==============================")
+        print("SALVANDO DEVICE")
+        print("Nome:", networkDevice.name)
+        print("HOST:", networkDevice.host)
+        print("VirtualID:", networkDevice.virtualID ?? "nil")
+        print("ProductID:", networkDevice.productID ?? "nil")
+        print("LocalKey:", networkDevice.localKey ?? "nil")
+        print("==============================")
+        
         store.add(novoDevice)
     }
 }

@@ -922,10 +922,7 @@ final class NetworkScanner: ObservableObject {
         let device =
             NetworkDevice(
                 name: name,
-                host:
-                    advertisedIP
-                    ?? remoteIP
-                    ?? "-",
+                host: advertisedIP ?? remoteIP ?? "-",
                 port: String(port),
                 manufacturer: "Tuya",
                 isTuya: true,

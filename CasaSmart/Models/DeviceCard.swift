@@ -10,6 +10,8 @@ import SwiftData
 
 struct DeviceCard: View {
 
+    @State private var pulse = false
+    
     @Binding var device: Device
 
     @EnvironmentObject
@@ -34,18 +36,19 @@ struct DeviceCard: View {
 
                 HStack {
 
-                    Image(systemName: device.icon)
-                        .font(.system(size: 28))
-                        .foregroundStyle(
-                            device.isOn ? .yellow : .gray
-                        )
-                        .padding(12)
-                        .background(
-                            device.isOn
-                            ? Color.yellow.opacity(0.25) : Color.gray.opacity(0.15)
-                        )
-                        .clipShape(Circle())
-
+                  
+                Image(systemName: device.icon)
+                    .font(.system(size: 28))
+                    .foregroundStyle(device.isOn ? .yellow : .gray)
+                    .padding(12)
+                    .background(device.isOn ?Color.yellow.opacity(0.25) : Color.gray.opacity(0.15))
+                    .clipShape(Circle())
+                    
+                    
+                        
+                       
+                        
+                       
 
                     Spacer()
 
@@ -82,8 +85,9 @@ struct DeviceCard: View {
                             if comandoEmAndamento {
                                 
                                 ProgressView()
-                                    .controlSize(.small)
-                                
+                                   // .controlSize(.small)
+                                //aqui em baixo
+                                    .scaleEffect(1.2)
                             } else {
                                 
                                 Image(
@@ -121,6 +125,7 @@ struct DeviceCard: View {
                         )
                         
                     }
+                    .animation(.spring(),value: comandoEmAndamento)
                     .buttonStyle(.plain)
                     .disabled(comandoEmAndamento)
                 }

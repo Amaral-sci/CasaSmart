@@ -141,43 +141,34 @@ final class TuyaTCPClient {
         _ data: Data,
         connection: NWConnection
     ) async throws {
-        
-        
-        
+
+        print("ENVIANDO TCP:", data.count, "bytes")
+
         try await withCheckedThrowingContinuation {
-            
             (
                 continuation:
-                    CheckedContinuation<
-                Void,
-                Error
-                >
+                CheckedContinuation<Void, Error>
             ) in
-            
-            
-            
+
             connection.send(
                 content: data,
-                completion:
-                        .contentProcessed {
-                            
-                            error in
-                            
-                            
-                            if let error {
-                                
-                                
-                                continuation.resume(
-                                    throwing: error
-                                )
-                                
-                                
-                            } else {
-                                
-                                
-                                continuation.resume()
-                            }
-                        }
+                completion: .contentProcessed { error in
+
+                    if let error {
+
+                        print("ERRO SEND:", error)
+
+                        continuation.resume(
+                            throwing: error
+                        )
+
+                    } else {
+
+                        print("SEND OK")
+
+                        continuation.resume()
+                    }
+                }
             )
         }
     }
@@ -257,19 +248,24 @@ final class TuyaTCPClient {
                             
                             if complete {
 
+                                print("⚠️ CONEXÃO FECHADA PELO DEVICE")
+
                                 Task {
 
-                                    if await buffer.count() > 0 {
+                                    let count = await buffer.count()
+
+                                    if count > 0 {
+
+                                        let value = await buffer.value()
 
                                         continuation.resume(
-                                            returning: await buffer.value()
+                                            returning: value
                                         )
 
                                     } else {
 
                                         continuation.resume(
-                                            throwing:
-                                            NovaDigitalError.conexaoFalhou
+                                            returning: Data()
                                         )
                                     }
                                 }

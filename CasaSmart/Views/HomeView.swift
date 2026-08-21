@@ -10,18 +10,10 @@ import SwiftData
 
 struct HomeView: View {
     
-    
     @EnvironmentObject var store: DeviceStore
-    
-//    @Environment(\.modelContext)
-//    private var context
 
-    
-    private var favoritos: [Device] { store.devices.prefix(2).map { $0 }
-    }
-    private var ambientes: [String] { Array(Set(store.devices.map { $0.room }))
-        .sorted()
-    }
+    private var favoritos: [Device] { store.devices.prefix(2).map { $0 }    }
+    private var ambientes: [String] { Array(Set(store.devices.map { $0.room }))        .sorted()    }
     
     var body: some View {
         
@@ -105,7 +97,7 @@ struct HomeView: View {
                         }
 
 
-            
+                       
                         
                         
                         // MARK: - Favoritos
@@ -175,6 +167,12 @@ struct HomeView: View {
             }
             
             .navigationBarHidden(true)
+
+            .onAppear {
+
+                store.refreshDeviceStates()
+
+            }
             
         }
         

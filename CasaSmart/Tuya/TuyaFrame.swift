@@ -102,7 +102,12 @@ final class TuyaFrame {
 
         frame.append(payload)
 
-
+        print("================================")
+        print("FRAME PAYLOAD RECEBIDO")
+        print("PAYLOAD SIZE:", payload.count)
+        print(payload.map { String(format:"%02X",$0) }
+            .joined(separator:" "))
+        print("================================")
 
         let hmacData: Data
 
@@ -200,7 +205,6 @@ final class TuyaFrame {
             retcodeLength
             + payload.count
             + 32
-            + 4
         )
 
 
@@ -251,24 +255,21 @@ final class TuyaFrame {
 
         switch hmacMode {
 
-
         case .payload:
 
             hmacData = payload
-
-
 
         case .fullFrame:
 
             hmacData = frame
 
-
-
         case .handshakeStart:
 
             var temp = Data()
 
-            temp.append(uint32BE(sequence))
+            temp.append(
+                uint32BE(command)
+            )
 
             temp.append(payload)
 
@@ -284,20 +285,24 @@ final class TuyaFrame {
         print(hmacData.map {String(format:"%02X",$0)}
             .joined(separator:" "))
         print("================================")
-
+        
         let authKey = Data(
             HMAC<SHA256>.authenticationCode(
                 for: Data("3.4".utf8),
-                using: SymmetricKey(data:key)
+                using: SymmetricKey(data: key)
             )
         )
-        
+
+
         let hmac = Data(
             HMAC<SHA256>.authenticationCode(
                 for: hmacData,
-                using: SymmetricKey(data:authKey)            )
+                using: SymmetricKey(data: authKey)
+            )
         )
         
+        print("FRAME PAYLOAD:", payload.count)
+        print("FRAME LENGTH:", length)
         print("HMAC RESULT:")
         print(hmac.map {String(format:"%02X",$0)}
             .joined(separator:" "))
@@ -369,7 +374,6 @@ final class TuyaFrame {
 
         let payloadLength =
             Int(length)
-            - 4
             - 32
             - 4
 

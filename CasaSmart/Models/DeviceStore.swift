@@ -49,6 +49,7 @@ final class DeviceStore: ObservableObject {
         _ device: Device
     ) async {
 
+
         guard let index = devices.firstIndex(where: {
             $0.id == device.id
         }) else {
@@ -72,24 +73,21 @@ final class DeviceStore: ObservableObject {
 
 
         defer {
-
-            Task { @MainActor in
-
-                pendingDeviceIDs.remove(device.id)
-
-            }
+            pendingDeviceIDs.remove(device.id)
         }
 
 
+
         do {
+
 
             guard let deviceID = deviceToControl.virtualID,
                   !deviceID.isEmpty else {
 
                 lastCommandError = "Sem Device ID Tuya"
-
                 return
             }
+
 
 
             try await TuyaCloudService.shared.sendCommand(
@@ -97,15 +95,28 @@ final class DeviceStore: ObservableObject {
                 state: desiredState
             )
 
-            var updatedDevice = deviceToControl
-
-            updatedDevice.isOn = desiredState
 
 
-            update(updatedDevice)
+            print(
+                "Comando enviado:",
+                device.name,
+                desiredState ? "LIGADO" : "DESLIGADO"
+            )
+
+
+            // aguarda o dispositivo atualizar na nuvem
+            try await Task.sleep(
+                for: .seconds(1)
+            )
+
+
+            // busca estado real
+            refreshDeviceStates()
+
 
 
         } catch {
+
 
             lastCommandError =
             error.localizedDescription
@@ -181,6 +192,84 @@ final class DeviceStore: ObservableObject {
             }
         }
     }
+    
+    // MARK: - Estado Real Cloud
+
+    func refreshDeviceStates() {
+
+        Task {
+
+            let currentDevices = devices
+
+
+            for device in currentDevices {
+
+                do {
+
+                    guard let virtualID = device.virtualID else {
+
+                        print(
+                            "Dispositivo sem VirtualID:",
+                            device.name
+                        )
+
+                        continue
+                    }
+
+
+                    let state =
+                    try await TuyaCloudService.shared.getStatus(
+                        deviceID: virtualID
+                    )
+
+
+                    await MainActor.run {
+
+
+                        guard let index =
+                                devices.firstIndex(where: {
+                                    $0.id == device.id
+                                })
+                        else {
+                            return
+                        }
+
+
+
+                        var updatedDevice =
+                        devices[index]
+
+
+
+                        updatedDevice.isOn = state
+
+
+
+                        update(updatedDevice)
+
+
+
+                        print(
+                            "Estado atualizado:",
+                            device.name,
+                            state ? "LIGADO" : "DESLIGADO"
+                        )
+                    }
+
+
+                } catch {
+
+
+                    print(
+                        "Erro buscando estado:",
+                        device.name,
+                        error
+                    )
+
+                }
+            }
+        }
+    }
     // MARK: - Buscar dispositivos
 
 
@@ -200,19 +289,28 @@ final class DeviceStore: ObservableObject {
 
         do {
 
-
             let entities =
             try context.fetch(
                 descriptor
             )
 
 
+            devices = entities.map {
 
-            devices =
-            entities.map {
-                $0.toDevice()
+                let device = $0.toDevice()
+
+                print("==============================")
+                print("BANCO")
+                print("Nome:", device.name)
+                print("IP:", device.ip ?? "SEM IP")
+                print("VirtualID:", device.virtualID ?? "SEM ID")
+                print("ProductID:", device.productID ?? "SEM PRODUTO")
+                print("LocalKey:", device.localKey ?? "SEM KEY")
+                print("==============================")
+
+
+                return device
             }
-
 
 
         } catch {
@@ -239,7 +337,13 @@ final class DeviceStore: ObservableObject {
     func add(
         _ device: Device
     ) {
-
+        print("==============================")
+        print("DEVICESTORE RECEBEU")
+        print("Nome:", device.name)
+        print("IP:", device.ip ?? "SEM IP")
+        print("VirtualID:", device.virtualID ?? "SEM ID")
+        print("LocalKey:", device.localKey ?? "SEM KEY")
+        print("==============================")
 
         let entity =
         DeviceEntity(
@@ -318,8 +422,12 @@ final class DeviceStore: ObservableObject {
 
                 save()
 
+                if let index = devices.firstIndex(where: {
+                    $0.id == device.id
+                }) {
 
-                load()
+                    devices[index] = device
+                }
 
             }
 
